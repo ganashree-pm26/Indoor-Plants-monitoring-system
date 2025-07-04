@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Recommendations</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #81C784;
+            --background-color: #f0f4f0;
+            --card-bg-color: #ffffff;
+            --text-color: #333333;
+            --light-gray-color: #e0e0e0;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            width: 100%;
+            padding: 1rem 0;
+            text-align: center;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: white;
+            width: 100%;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        nav a {
+            color: var(--primary-color);
+            margin: 0 20px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: color 0.3s;
+        }
+        nav a:hover, nav a.active {
+            color: #388E3C;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 2rem auto;
+            text-align: center;
+        }
+        h1 {
+            color: white;
+            font-weight: 700;
+        }
+        h2 {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 2rem;
+        }
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .plant-card {
+            background-color: var(--card-bg-color);
+            border-radius: 15px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        .plant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .card-image {
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .card-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0));
+        }
+        .card-content {
+            padding: 1.5rem;
+            text-align: left;
+            position: relative;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .plant-name {
+            position: absolute;
+            bottom: 1rem;
+            left: 1.5rem;
+            color: white;
+            font-size: 1.8em;
+            font-weight: 700;
+            z-index: 2;
+            margin: 0;
+        }
+        .match-percent {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1.1em;
+            position: absolute;
+            top: -25px;
+            right: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .know-more-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            transition: background-color 0.3s;
+            align-self: flex-start;
+        }
+        .know-more-btn:hover {
+            background-color: var(--primary-color);
+        }
+        .details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, margin-top 0.5s ease-in-out;
+            margin-top: 0;
+        }
+        .details.expanded {
+            max-height: 500px; /* Adjust as needed */
+            margin-top: 1rem;
+        }
+        .param {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--light-gray-color);
+        }
+        .param:last-child {
+            border-bottom: none;
+        }
+        .param-name {
+            font-weight: 600;
+        }
+        .param-value {
+            font-weight: 400;
+        }
+        .param-value.in-range { color: #388E3C; }
+        .param-value.out-of-range { color: #D32F2F; }
+        .no-recs {
+            text-align: center;
+            padding: 2rem;
+            background: var(--card-bg-color);
+            border-radius: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Plant Guardian</h1>
+    </header>
+
+    <nav>
+        <a href="/">Dashboard</a>
+        <a href="/recommend" class="active">Recommendations</a>
+        <a href="/suggest">Plant Suggester</a>
+        <a href="/library">Library</a>
+    </nav>
+
+    <div class="container">
+        <h2>Top 3 Plant Recommendations</h2>
+        <div class="recommendations-grid">
+            {% if recommendations %}
+                {% for rec in recommendations %}
+                <div class="plant-card">
+                    <div class="card-image" style="background-image: url('{{ rec.plant.image_url }}');">
+                        <h3 class="plant-name">{{ rec.plant.name }}</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="match-percent">{{ "%.0f"|format(rec.match_percentage) }}% Match</div>
+                        
+                        <div class="details">
+                            <div class="param">
+                                <span class="param-name">🌡️ Temperature</span>
+                                <span class="param-value {% if rec.details.temp.in_range %}in-range{% else %}out-of-range{% endif %}">
+                                    {{ rec.details.temp.value }}°C (Ideal: {{ rec.plant.temp[0] }}-{{ rec.plant.temp[1] }}°C)
+                                </span>
+                            </div>
+                            <div class="param">
+                                <span class="param-name">💧 Humidity</span>
+                                <span class="param-value {% if rec.details.humidity.in_range %}in-range{% else %}out-of-range{% endif %}">
+                                    {{ rec.details.humidity.value }}% (Ideal: {{ rec.plant.humidity[0] }}-{{ rec.plant.humidity[1] }}%)
+                                </span>
+                            </div>
+                            <div class="param">
+                                <span class="param-name">☀️ Light</span>
+                                <span class="param-value {% if rec.details.light.in_range %}in-range{% else %}out-of-range{% endif %}">
+                                    {{ rec.details.light.percent }}% (Raw: {{ rec.details.light.value }}) (Ideal: {{ rec.plant.light[0] }}-{{ rec.plant.light[1] }} lx)
+                                </span>
+                            </div>
+                            <div class="param">
+                                <span class="param-name">🌱 Soil Moisture</span>
+                                <span class="param-value {% if rec.details.moisture.in_range %}in-range{% else %}out-of-range{% endif %}">
+                                    {{ rec.details.moisture.value }} (Ideal: {{ rec.plant.moisture[0] }}-{{ rec.plant.moisture[1] }})
+                                </span>
+                            </div>
+                             <div class="param">
+                                <span class="param-name">💨 Air Quality</span>
+                                <span class="param-value {% if rec.details.air_quality.in_range %}in-range{% else %}out-of-range{% endif %}">
+                                    {{ rec.details.air_quality.ppm }} ppm (Raw: {{ rec.details.air_quality.value }}) (Ideal: < {{ rec.plant.air_quality[1] }})
+                                </span>
+                            </div>
+                            <div class="param">
+                                <span class="param-name">N (Nitrogen)</span>
+                                <span class="param-value {% if rec.details.n.in_range %}in-range{% else %}out-of-range{% endif %}">
+                                    {{ rec.details.n.value }} ppm (Ideal: {{ rec.plant.n[0] }}-{{ rec.plant.n[1] }} ppm)
+                                </span>
+                            </div>
+                            <div class="param">
+                                <span class="param-name">P (Phosphorus)</span>
+                                <span class="param-value {% if rec.details.p.in_range %}in-range{% else %}out-of-range{% endif %}">
+                                    {{ rec.details.p.value }} ppm (Ideal: {{ rec.plant.p[0] }}-{{ rec.plant.p[1] }} ppm)
+                                </span>
+                            </div>
+                            <div class="param">
+                                <span class="param-name">K (Potassium)</span>
+                                <span class="param-value {% if rec.details.k.in_range %}in-range{% else %}out-of-range{% endif %}">
+                                    {{ rec.details.k.value }} ppm (Ideal: {{ rec.plant.k[0] }}-{{ rec.plant.k[1] }} ppm)
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <button class="know-more-btn">Know More</button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-recs">
+                    <p>Could not get recommendations. Is the sensor connected and sending data?</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const knowMoreButtons = document.querySelectorAll('.know-more-btn');
+            knowMoreButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const cardContent = this.parentElement;
+                    const details = cardContent.querySelector('.details');
+                    details.classList.toggle('expanded');
+
+                    if (details.classList.contains('expanded')) {
+                        this.textContent = 'Show Less';
+                    } else {
+                        this.textContent = 'Know More';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

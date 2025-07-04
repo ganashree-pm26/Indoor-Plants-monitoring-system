@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Care Suggestions</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #81C784;
+            --background-color: #f0f4f0;
+            --card-bg-color: #ffffff;
+            --text-color: #333333;
+            --light-gray-color: #e0e0e0;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        nav a {
+            color: var(--primary-color);
+            margin: 0 20px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: color 0.3s;
+        }
+        nav a:hover, nav a.active { color: #388E3C; }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 2rem auto;
+        }
+        h1 { color: white; font-weight: 700; }
+        h2 {
+            font-weight: 600;
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .current-conditions {
+            background: var(--card-bg-color);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        .conditions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1.5rem;
+            text-align: center;
+        }
+        .condition-item {
+            background: var(--background-color);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+        .condition-item strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .plant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            align-items: stretch;
+        }
+        .plant-tile {
+            background: white;
+            border-radius: 15px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid transparent;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+        }
+        .plant-tile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+        .plant-tile.selected {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px var(--secondary-color);
+        }
+        .plant-tile img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+        }
+        .plant-tile-name {
+            font-weight: 600;
+            font-size: 0.9em;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .suggestions-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            min-height: 250px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        #suggestions-output { list-style: none; padding: 0; margin: 0; }
+        #suggestions-output li {
+            padding: 1rem 0.5rem;
+            border-bottom: 1px solid var(--light-gray-color);
+        }
+        #suggestions-output li:last-child { border-bottom: none; }
+        
+        .suggestion-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        .suggestion-text { font-size: 1.1rem; }
+        .suggestion-text .status-good { color: #27ae60; font-weight: 600; }
+        .suggestion-text .status-bad { color: #c0392b; font-weight: 600; }
+        
+        .suggestion-advice {
+            font-size: 1rem;
+            color: #555;
+            padding: 8px 0 4px 0;
+            display: block;
+        }
+        
+        .suggestion-details-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            margin-top: 0;
+        }
+        .suggestion-details-container.expanded {
+            max-height: 100px;
+            margin-top: 10px;
+            padding: 10px;
+        }
+        .suggestion-details {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        
+        .know-more-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9em;
+            transition: background-color 0.3s;
+        }
+        .know-more-btn:hover { background-color: var(--primary-color); }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Plant Guardian</h1>
+    </header>
+
+    <nav>
+        <a href="/">Dashboard</a>
+        <a href="/recommend">Recommendations</a>
+        <a href="/suggest" class="active">Plant Suggester</a>
+        <a href="/library">Library</a>
+    </nav>
+
+    <div class="container">
+        <div class="current-conditions">
+            <h2>Your Current Environment</h2>
+            <div class="conditions-grid">
+                <div class="condition-item"><strong>☀️ Light</strong> <span id="current-light">--</span>%</div>
+                <div class="condition-item"><strong>🌱 Moisture</strong> <span id="current-moisture">--</span>%</div>
+                <div class="condition-item"><strong>💧 Humidity</strong> <span id="current-humidity">--</span>%</div>
+                <div class="condition-item"><strong>🌡️ Temp</strong> <span id="current-temp">--</span>°C</div>
+                <div class="condition-item"><strong>💨 Air Quality</strong> <span id="current-air">--</span></div>
+                <div class="condition-item"><strong>N</strong> <span id="current-n">--</span> ppm</div>
+                <div class="condition-item"><strong>P</strong> <span id="current-p">--</span> ppm</div>
+                <div class="condition-item"><strong>K</strong> <span id="current-k">--</span> ppm</div>
+            </div>
+        </div>
+
+        <h2>Select a Plant</h2>
+        <div class="plant-grid" id="plant-grid">
+             {% for plant in plants %}
+                <div class="plant-tile" data-plant-index="{{ loop.index0 }}">
+                    <img src="{{ plant.image_url }}" alt="{{ plant.name }}">
+                    <div class="plant-tile-name">{{ plant.name }}</div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="suggestions-container">
+            <ul id="suggestions-output">
+                <li style="justify-content: center; color: #7f8c8d; border: none;">Please select a plant to see care suggestions.</li>
+            </ul>
+        </div>
+    </div>
+    <script id="plant-data" type="application/json">
+        {{ plants|tojson|safe }}
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const allPlantsData = JSON.parse(document.getElementById('plant-data').textContent);
+            const plantGrid = document.getElementById('plant-grid');
+            const suggestionsOutput = document.getElementById('suggestions-output');
+            let liveReadings = {};
+            let selectedPlantIndex = null;
+
+            // Re-maps a number from one range to another.
+            function map(value, fromLow, fromHigh, toLow, toHigh) {
+                return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
+            }
+
+            function updateSuggestions() {
+                if (selectedPlantIndex === null) {
+                    suggestionsOutput.innerHTML = '<li style="justify-content: center; color: #7f8c8d; border: none;">Please select a plant to see care suggestions.</li>';
+                    return;
+                }
+                
+                const selectedPlant = allPlantsData[selectedPlantIndex];
+                if (!selectedPlant || !liveReadings.temperature) {
+                    suggestionsOutput.innerHTML = '<li style="justify-content: center; color: #7f8c8d; border: none;">Waiting for live data...</li>';
+                    return;
+                }
+                
+                let html = '';
+                const { light_intensity, soil_moisture, humidity, temperature, air_quality, nitrogen, phosphorous, potassium } = liveReadings;
+                
+                const checks = [
+                    { name: 'Light', val: light_intensity, ideal: selectedPlant.light, unit: '%', advice: { low: 'Move to a brighter area.', high: 'Find a less sunny spot.'} },
+                    { name: 'Moisture', val: soil_moisture, ideal: selectedPlant.moisture, unit: '%', advice: { low: 'Soil is dry. Consider watering.', high: 'Soil is too wet. Water less often.'} },
+                    { name: 'Humidity', val: humidity, ideal: selectedPlant.humidity, unit: '%', advice: { low: 'Humidity is low. Consider misting the plant.', high: 'Humidity is high. Ensure good air ventilation.'} },
+                    { name: 'Temperature', val: temperature, ideal: selectedPlant.temp, unit: '°C', advice: { low: 'Too cold for this plant. Move to a warmer spot.', high: 'Too hot for this plant. Move to a cooler spot.'} },
+                    { name: 'Air Quality', val: air_quality, ideal: selectedPlant.air_quality, unit: '', advice: { high: 'Air quality is poor. Ensure good ventilation.'} },
+                    { name: 'Nitrogen', val: nitrogen, ideal: selectedPlant.n, unit: ' ppm', advice: { low: 'Use a nitrogen-rich fertilizer.', high: 'Nitrogen level is too high. Leach the soil by watering thoroughly.'} },
+                    { name: 'Phosphorous', val: phosphorous, ideal: selectedPlant.p, unit: ' ppm', advice: { low: 'Use a phosphorus-rich fertilizer.', high: 'Phosphorus level is too high. Avoid phosphorus fertilizers for a while.'} },
+                    { name: 'Potassium', val: potassium, ideal: selectedPlant.k, unit: ' ppm', advice: { low: 'Use a potassium-rich fertilizer.', high: 'Potassium level is too high. Leach the soil by watering thoroughly.'} }
+                ];
+
+                for (const check of checks) {
+                    const [min, max] = check.ideal;
+                    let currentVal, details;
+                    
+                    if (check.name === 'Light') {
+                        let lightPercent = map(check.val, 4095, 0, 0, 100);
+                        lightPercent = Math.round(Math.max(0, Math.min(100, lightPercent)));
+                        details = `Current: ${lightPercent}${check.unit} (Raw: ${check.val}) / Ideal Raw: ${min}-${max}`;
+                    } else if (check.name === 'Moisture') {
+                        // A common range for soil moisture sensors is ~300 (very wet) to ~700 (very dry)
+                        // But can go up to 4095. Let's map a wide practical range.
+                        let moisturePercent = map(check.val, 3000, 500, 0, 100);
+                        moisturePercent = Math.round(Math.max(0, Math.min(100, moisturePercent)));
+                        details = `Current: ${moisturePercent}${check.unit} (Raw: ${check.val}) / Ideal Raw: ${min}-${max}`;
+                    } else if (check.name === 'Air Quality') {
+                        const ppm = (check.val / 4095.0) * 1000;
+                        details = `Current: ${ppm.toFixed(1)} ppm (Raw: ${check.val}) / Ideal Raw: < ${max}`;
+                    } else {
+                        currentVal = typeof check.val === 'number' && check.unit.includes('°C') ? check.val.toFixed(1) : check.val;
+                        details = `Current: ${currentVal}${check.unit} / Ideal: ${min}-${max}${check.unit}`;
+                    }
+                    
+                    let statusText = '', adviceText = '', checkDetails = details;
+                    let hasAdvice = false;
+
+                    // Inverted logic for light & moisture: high raw value means low environmental value
+                    if (check.name === 'Light' || check.name === 'Moisture') {
+                        if (check.val >= min && check.val <= max) {
+                            statusText = `<span class="status-good">✔ ${check.name}:</span> In range`;
+                        } else if (check.val > max) { // Raw > max means "Too Low" (too dry or too dark)
+                            statusText = `<span class="status-bad">✘ ${check.name}:</span> Too Low`;
+                            adviceText = check.advice.low;
+                            hasAdvice = true;
+                        } else { // Raw < min means "Too High" (too wet or too bright)
+                            statusText = `<span class="status-bad">✘ ${check.name}:</span> Too High`;
+                            adviceText = check.advice.high;
+                            hasAdvice = true;
+                        }
+                    } else if (check.name === 'Air Quality') {
+                        if (check.val <= max) {
+                            statusText = `<span class="status-good">✔ ${check.name}:</span> In range`;
+                        } else {
+                            statusText = `<span class="status-bad">✘ ${check.name}:</span> Out of range`;
+                            adviceText = check.advice.high;
+                            hasAdvice = true;
+                        }
+                    } else { // Normal logic for temp, humidity, NPK
+                        if (check.val >= min && check.val <= max) {
+                            statusText = `<span class="status-good">✔ ${check.name}:</span> In range`;
+                        } else if (check.val < min) {
+                            statusText = `<span class="status-bad">✘ ${check.name}:</span> Too Low`;
+                            adviceText = check.advice.low;
+                            hasAdvice = true;
+                        } else {
+                            statusText = `<span class="status-bad">✘ ${check.name}:</span> Too High`;
+                            adviceText = check.advice.high;
+                            hasAdvice = true;
+                        }
+                    }
+
+                    const adviceHTML = hasAdvice ? `<span class="suggestion-advice">💡 ${adviceText}</span>` : '';
+                    const buttonHTML = `<button class="know-more-btn">Details</button>`;
+                    
+                    html += `
+                        <li>
+                            <div class="suggestion-main">
+                                <span class="suggestion-text">${statusText}</span>
+                                ${buttonHTML}
+                            </div>
+                            ${adviceHTML}
+                            <div class="suggestion-details-container">
+                                <span class="suggestion-details">${checkDetails}</span>
+                            </div>
+                        </li>
+                    `;
+                }
+                suggestionsOutput.innerHTML = html;
+            }
+
+            async function fetchLiveReadings() {
+                try {
+                    const response = await fetch('/api/readings');
+                    if (!response.ok) throw new Error('Network response failed');
+                    liveReadings = await response.json();
+                    
+                    // Update header with mapped percentages for user-friendliness
+                    let lightPercent = map(liveReadings.light_intensity, 4095, 0, 0, 100);
+                    document.getElementById('current-light').textContent = Math.round(Math.max(0, Math.min(100, lightPercent)));
+
+                    let moisturePercent = map(liveReadings.soil_moisture, 3000, 500, 0, 100);
+                    document.getElementById('current-moisture').textContent = Math.round(Math.max(0, Math.min(100, moisturePercent)));
+                    
+                    document.getElementById('current-humidity').textContent = liveReadings.humidity.toFixed(1);
+                    document.getElementById('current-temp').textContent = liveReadings.temperature.toFixed(1);
+                    document.getElementById('current-air').textContent = liveReadings.air_quality;
+                    document.getElementById('current-n').textContent = liveReadings.nitrogen;
+                    document.getElementById('current-p').textContent = liveReadings.phosphorous;
+                    document.getElementById('current-k').textContent = liveReadings.potassium;
+
+                    updateSuggestions();
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                }
+            }
+
+            plantGrid.addEventListener('click', (e) => {
+                const tile = e.target.closest('.plant-tile');
+                if (!tile) return;
+
+                const currentSelected = document.querySelector('.plant-tile.selected');
+                if (currentSelected) {
+                    currentSelected.classList.remove('selected');
+                }
+
+                tile.classList.add('selected');
+                selectedPlantIndex = tile.dataset.plantIndex;
+                updateSuggestions();
+            });
+
+            suggestionsOutput.addEventListener('click', (e) => {
+                const btn = e.target.closest('.know-more-btn');
+                if (!btn) return;
+
+                const li = btn.closest('li');
+                const detailsContainer = li.querySelector('.suggestion-details-container');
+                
+                detailsContainer.classList.toggle('expanded');
+                if (detailsContainer.classList.contains('expanded')) {
+                    btn.textContent = 'Hide';
+                } else {
+                    btn.textContent = 'Details';
+                }
+            });
+            
+            fetchLiveReadings();
+            setInterval(fetchLiveReadings, 5000);
+        });
+    </script>
+</body>
+</html> 

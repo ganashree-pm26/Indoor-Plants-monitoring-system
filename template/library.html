@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Library - Plant Guardian</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #81C784;
+            --background-color: #f0f4f0;
+            --card-bg-color: #ffffff;
+            --text-color: #333333;
+            --light-gray-color: #e0e0e0;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        nav a {
+            color: var(--primary-color);
+            margin: 0 20px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: color 0.3s;
+        }
+        nav a:hover, nav a.active { color: #388E3C; }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 2rem auto;
+        }
+        h1 { color: white; font-weight: 700; }
+        h2 {
+            font-weight: 600;
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .plant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .plant-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+        .plant-header {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            gap: 1rem;
+        }
+        .plant-header img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .plant-name {
+            font-weight: 600;
+            font-size: 1.2em;
+        }
+        .plant-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+            padding: 0 1.5rem;
+        }
+        .plant-card.expanded .plant-details {
+            max-height: 1000px; /* Large enough for content */
+            padding: 1rem 1.5rem 1.5rem;
+        }
+        .info-section {
+            margin-bottom: 1rem;
+        }
+        .info-section h3 {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        .info-section p {
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Plant Guardian</h1>
+    </header>
+
+    <nav>
+        <a href="/">Dashboard</a>
+        <a href="/recommend">Recommendations</a>
+        <a href="/suggest">Plant Suggester</a>
+        <a href="/library" class="active">Library</a>
+    </nav>
+
+    <div class="container">
+        <h2>Plant Library</h2>
+        <div class="plant-grid" id="plant-grid">
+            <!-- Plants will be loaded here by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const plantGrid = document.getElementById('plant-grid');
+
+            async function loadPlants() {
+                try {
+                    const response = await fetch('/static/plant_data.json');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const plants = await response.json();
+                    
+                    plantGrid.innerHTML = ''; // Clear existing content
+
+                    plants.forEach(plant => {
+                        const card = document.createElement('div');
+                        card.className = 'plant-card';
+
+                        card.innerHTML = `
+                            <div class="plant-header">
+                                <img src="${plant.image_url}" alt="${plant.name}">
+                                <span class="plant-name">${plant.name}</span>
+                            </div>
+                            <div class="plant-details">
+                                <div class="info-section">
+                                    <h3>🌿 Care Tips</h3>
+                                    <p>${plant.care_tips}</p>
+                                </div>
+                                <div class="info-section">
+                                    <h3>🐾 Toxicity</h3>
+                                    <p>${plant.toxicity}</p>
+                                </div>
+                                <div class="info-section">
+                                    <h3>💡 Fun Facts</h3>
+                                    <p>${plant.fun_facts}</p>
+                                </div>
+                            </div>
+                        `;
+                        plantGrid.appendChild(card);
+                    });
+
+                } catch (error) {
+                    plantGrid.innerHTML = '<p>Error loading plant data. Please try again later.</p>';
+                    console.error('Failed to load plant data:', error);
+                }
+            }
+
+            plantGrid.addEventListener('click', (e) => {
+                const header = e.target.closest('.plant-header');
+                if (!header) return;
+
+                const card = header.parentElement;
+                
+                const currentlyExpanded = document.querySelector('.plant-card.expanded');
+                if (currentlyExpanded && currentlyExpanded !== card) {
+                    currentlyExpanded.classList.remove('expanded');
+                }
+
+                card.classList.toggle('expanded');
+            });
+
+            loadPlants();
+        });
+    </script>
+</body>
+</html> 

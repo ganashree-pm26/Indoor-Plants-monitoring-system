@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Plant Guardian</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #81C784;
+            --background-color: #f0f4f0;
+            --card-bg-color: #ffffff;
+            --text-color: #333333;
+            --light-gray-color: #e0e0e0;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        nav a {
+            color: var(--primary-color);
+            margin: 0 20px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: color 0.3s;
+        }
+        nav a:hover, nav a.active { color: #388E3C; }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 2rem auto;
+        }
+        h1 { color: white; font-weight: 700; }
+        h2 {
+            font-weight: 600;
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .status-bar {
+            background: var(--card-bg-color);
+            border-radius: 15px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-color);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #D32F2F; /* Red for disconnected */
+            animation: pulse-red 2s infinite;
+        }
+        .status-indicator.connected {
+            background: #27ae60; /* Green for connected */
+            animation: none;
+        }
+        .last-update {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        .sensor-card {
+            background: var(--card-bg-color);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .sensor-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .sensor-icon {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+        }
+        .sensor-title {
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        .sensor-body .main-value {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+        .sensor-body .unit {
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: #7f8c8d;
+            margin-left: 0.25rem;
+        }
+        .sensor-footer {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        .npk-card .sensor-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+            text-align: center;
+        }
+        .npk-item .main-value { font-size: 2rem; }
+        .npk-item .unit { font-size: 1rem; }
+        .npk-label { 
+            font-weight: 600; 
+            margin-top: 0.25rem; 
+            font-size: 0.85em;
+        }
+
+        @keyframes pulse-red {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Plant Guardian</h1>
+    </header>
+
+    <nav>
+        <a href="/" class="active">Dashboard</a>
+        <a href="/recommend">Recommendations</a>
+        <a href="/suggest">Plant Suggester</a>
+        <a href="/library">Library</a>
+    </nav>
+
+    <div class="container">
+        <h2>Live Environment Dashboard</h2>
+
+        <div class="status-bar">
+            <div class="connection-status">
+                <div class="status-indicator" id="status-indicator"></div>
+                <span id="status-text">Connecting...</span>
+            </div>
+            <div class="last-update">
+                Last updated: <span id="last-updated">never</span>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Temperature -->
+            <div class="sensor-card">
+                <div class="sensor-header">
+                    <div class="sensor-icon">🌡️</div>
+                    <div class="sensor-title">Temperature</div>
+                </div>
+                <div class="sensor-body">
+                    <span class="main-value" id="temp-value">--</span><span class="unit">°C</span>
+                </div>
+                <div class="sensor-footer">Room ambient temperature.</div>
+            </div>
+            <!-- Humidity -->
+            <div class="sensor-card">
+                <div class="sensor-header">
+                    <div class="sensor-icon">💧</div>
+                    <div class="sensor-title">Humidity</div>
+                </div>
+                <div class="sensor-body">
+                    <span class="main-value" id="humidity-value">--</span><span class="unit">%</span>
+                </div>
+                <div class="sensor-footer">Relative air humidity.</div>
+            </div>
+            <!-- Light -->
+            <div class="sensor-card">
+                <div class="sensor-header">
+                    <div class="sensor-icon">☀️</div>
+                    <div class="sensor-title">Light Intensity</div>
+                </div>
+                <div class="sensor-body">
+                    <span class="main-value" id="light-percent">--</span><span class="unit">%</span>
+                </div>
+                <div class="sensor-footer">Raw Value: <span id="light-raw">--</span></div>
+            </div>
+            <!-- Soil Moisture -->
+            <div class="sensor-card">
+                <div class="sensor-header">
+                    <div class="sensor-icon">🌱</div>
+                    <div class="sensor-title">Soil Moisture</div>
+                </div>
+                <div class="sensor-body">
+                    <span class="main-value" id="soil-percent">--</span><span class="unit">%</span>
+                </div>
+                <div class="sensor-footer">Raw Value: <span id="soil-raw">--</span></div>
+            </div>
+            <!-- Air Quality -->
+            <div class="sensor-card">
+                <div class="sensor-header">
+                    <div class="sensor-icon">💨</div>
+                    <div class="sensor-title">Air Quality</div>
+                </div>
+                <div class="sensor-body">
+                    <span class="main-value" id="air-ppm">--</span><span class="unit">ppm</span>
+                </div>
+                <div class="sensor-footer">Raw Value: <span id="air-raw">--</span></div>
+            </div>
+            <!-- NPK -->
+            <div class="sensor-card npk-card">
+                <div class="sensor-header">
+                    <div class="sensor-icon">🌾</div>
+                    <div class="sensor-title">Soil Nutrients (NPK)</div>
+                </div>
+                <div class="sensor-body">
+                    <div class="npk-item">
+                        <span class="main-value" id="n-value">--</span>
+                        <div class="npk-label">Nitrogen</div>
+                    </div>
+                    <div class="npk-item">
+                        <span class="main-value" id="p-value">--</span>
+                        <div class="npk-label">Phosphorus</div>
+                    </div>
+                    <div class="npk-item">
+                        <span class="main-value" id="k-value">--</span>
+                        <div class="npk-label">Potassium</div>
+                    </div>
+                </div>
+                <div class="sensor-footer">Values in ppm (mg/kg).</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const SENSOR_ELEMENTS = {
+                temp: document.getElementById('temp-value'),
+                humidity: document.getElementById('humidity-value'),
+                lightRaw: document.getElementById('light-raw'),
+                lightPercent: document.getElementById('light-percent'),
+                soilRaw: document.getElementById('soil-raw'),
+                soilPercent: document.getElementById('soil-percent'),
+                airRaw: document.getElementById('air-raw'),
+                airPpm: document.getElementById('air-ppm'),
+                n: document.getElementById('n-value'),
+                p: document.getElementById('p-value'),
+                k: document.getElementById('k-value'),
+                lastUpdated: document.getElementById('last-updated'),
+                statusIndicator: document.getElementById('status-indicator'),
+                statusText: document.getElementById('status-text'),
+            };
+
+            // Re-maps a number from one range to another.
+            function map(value, fromLow, fromHigh, toLow, toHigh) {
+                return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
+            }
+
+            function getSoilMoisturePercent(rawSoil) {
+                const SOIL_WET_RAW = 500;
+                const SOIL_DRY_RAW = 3000;
+                const rawClamped = Math.max(SOIL_WET_RAW, Math.min(SOIL_DRY_RAW, rawSoil));
+                return Math.round(100 * (SOIL_DRY_RAW - rawClamped) / (SOIL_DRY_RAW - SOIL_WET_RAW));
+            }
+
+            function updateUI(data) {
+                SENSOR_ELEMENTS.temp.textContent = data.temperature.toFixed(1);
+                SENSOR_ELEMENTS.humidity.textContent = data.humidity.toFixed(1);
+                
+                // Light
+                const rawLight = data.light_intensity;
+                let lightPercent = map(rawLight, 4095, 0, 0, 100); // Inverse map
+                lightPercent = Math.round(Math.max(0, Math.min(100, lightPercent))); // Clamp
+                SENSOR_ELEMENTS.lightPercent.textContent = lightPercent;
+                SENSOR_ELEMENTS.lightRaw.textContent = rawLight;
+
+                // Soil Moisture
+                SENSOR_ELEMENTS.soilRaw.textContent = data.soil_moisture;
+                SENSOR_ELEMENTS.soilPercent.textContent = getSoilMoisturePercent(data.soil_moisture);
+
+                // Air Quality
+                const rawAir = data.air_quality;
+                const ppm = (rawAir / 4095.0) * 1000;
+                SENSOR_ELEMENTS.airPpm.textContent = ppm.toFixed(2);
+                SENSOR_ELEMENTS.airRaw.textContent = rawAir;
+
+                SENSOR_ELEMENTS.n.textContent = data.nitrogen;
+                SENSOR_ELEMENTS.p.textContent = data.phosphorous;
+                SENSOR_ELEMENTS.k.textContent = data.potassium;
+                
+                const updateTime = new Date(data.timestamp);
+                SENSOR_ELEMENTS.lastUpdated.textContent = updateTime.toLocaleTimeString();
+            }
+
+            async function checkConnection() {
+                try {
+                    const response = await fetch('/api/status');
+                    const status = await response.json();
+                    if (status.connected) {
+                        SENSOR_ELEMENTS.statusIndicator.classList.add('connected');
+                        SENSOR_ELEMENTS.statusText.textContent = `Connected on ${status.port}`;
+                    } else {
+                        SENSOR_ELEMENTS.statusIndicator.classList.remove('connected');
+                        SENSOR_ELEMENTS.statusText.textContent = 'Disconnected';
+                    }
+                } catch (error) {
+                    SENSOR_ELEMENTS.statusIndicator.classList.remove('connected');
+                    SENSOR_ELEMENTS.statusText.textContent = 'Server Error';
+                }
+            }
+
+            async function fetchData() {
+                try {
+                    const response = await fetch('/api/readings');
+                    if (!response.ok) throw new Error('Failed to fetch');
+                    const data = await response.json();
+                    updateUI(data);
+                } catch (error) {
+                    console.error("Error fetching sensor data:", error);
+                }
+            }
+
+            checkConnection();
+            fetchData();
+            setInterval(fetchData, 2000); // Fetch data every 2 seconds
+            setInterval(checkConnection, 10000); // Check connection status every 10 seconds
+        });
+    </script>
+</body>
+</html> 
